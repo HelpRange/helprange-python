@@ -1,0 +1,47 @@
+# Publishes to PyPI when a tag v<version> is pushed (bump src/helprange/_version.py first).
+#
+# Authentication: PyPI trusted publishing (OIDC) – no API token anywhere. The trusted publisher registered on
+# PyPI for project "helprange" is: owner HelpRange, repository helprange-python, workflow release.yml,
+# environment pypi. Keep this file's name, the environment name and the id-token permission exactly as they are.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tag matches the package version
+        run: test "v$(python -c "exec(open('src/helprange/_version.py').read()); print(__version__)")" = "${GITHUB_REF_NAME}"
+      - run: pip install -e '.[dev]' build twine
+      - run: pytest -q
+      - run: python -m build
+      - run: twine check --strict dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/helprange
+    permissions:
+      id-token: write # trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
