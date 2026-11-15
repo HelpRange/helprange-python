@@ -33,6 +33,7 @@ __all__ = [
     'RoomSettings',
     'RoomLinks',
     'RoomGuest',
+    'DataRoomGuestDetail',
     'WebhookEndpoint',
     'WebhookDelivery',
     'RequestItemDocument',
@@ -102,7 +103,6 @@ __all__ = [
     'ListDataRoomsResponse',
     'CreateDataRoomBodySettings',
     'CreateDataRoomBody',
-    'CreateDataRoomResponseGuest',
     'CreateDataRoomResponseDocument',
     'CreateDataRoomResponseFreezeArchive',
     'CreateDataRoomResponseFreeze',
@@ -555,6 +555,21 @@ class RoomGuest(TypedDict):
     """The guest's own invitation link (what the invitation e-mail carries)."""
 
 
+class _DataRoomGuestDetailRequired(TypedDict):
+    id: int
+    email: str
+    link: str
+    """The guest's own invitation link (what the invitation e-mail carries)."""
+    views: int
+    last_view_at: Optional[str]
+
+
+class DataRoomGuestDetail(_DataRoomGuestDetailRequired, total=False):
+    """A guest of the room with views, last visit and NDA status (nda and nda_signed_at only when the room asks for an NDA)."""
+    nda: Literal['signed', 'signed an older version', 'not signed']
+    nda_signed_at: Optional[str]
+
+
 class WebhookEndpoint(TypedDict):
     """WebhookEndpoint"""
     id: int
@@ -986,13 +1001,15 @@ class ListLinksQuery(TypedDict, total=False):
     """Only links of this document."""
     folder_id: int
     """Only links of documents in this folder."""
+    data_room_id: int
+    """Only links of this data room."""
     room_id: int
-    """Only links of this data room (data_room_id is accepted too)."""
+    """Deprecated alias of data_room_id (still accepted; data_room_id wins when both are sent)."""
     label: str
     """Label contains this text (case-insensitive); "default" = the documents' default links."""
-    created_after: str
+    created_after: Union[Any, Any]
     """Created on or after: YYYY-MM-DD (UTC) or an ISO 8601 date-time."""
-    created_before: str
+    created_before: Union[Any, Any]
     """Created on or before: YYYY-MM-DD (the whole day, UTC) or an ISO 8601 date-time."""
     status: Literal['active', 'expired', 'disabled', 'all']
     """active, expired (past its expiry date or views limit used up) or disabled (turned off in the panel). Missing or all: every link."""
@@ -1456,21 +1473,6 @@ class CreateDataRoomBody(_CreateDataRoomBodyRequired, total=False):
     """Only the settings sent change (unknown keys: 400). They may also be sent at the top level. A setting the plan does not include: 402 naming the plan – never dropped silently."""
 
 
-class _CreateDataRoomResponseGuestRequired(TypedDict):
-    id: int
-    email: str
-    link: str
-    """The guest's own invitation link."""
-    views: int
-    last_view_at: Optional[str]
-
-
-class CreateDataRoomResponseGuest(_CreateDataRoomResponseGuestRequired, total=False):
-    """CreateDataRoomResponseGuest"""
-    nda: Literal['signed', 'signed an older version', 'not signed']
-    nda_signed_at: Optional[str]
-
-
 class CreateDataRoomResponseDocument(TypedDict):
     """CreateDataRoomResponseDocument"""
     id: int
@@ -1526,7 +1528,7 @@ class _CreateDataRoomResponseRequired(TypedDict):
     folders: List[ListFoldersResponseFolder]
     """The room's folders in order (empty while folders are off)."""
     approval_workflow: bool
-    guests: List[CreateDataRoomResponseGuest]
+    guests: List[DataRoomGuestDetail]
     pending_access_requests: int
     documents: List[CreateDataRoomResponseDocument]
     expires_at: Optional[str]
@@ -2322,13 +2324,20 @@ class ListWebhookDeliveriesQuery(TypedDict, total=False):
     status: Literal['pending', 'delivered', 'failed']
     """Only this status."""
     limit: int
-    """1–100 (default 100)."""
+    """Items per page, 1–100 (default 100)."""
+    page: int
+    """Page number, 1 or more (default 1). next_page in the response is the next one, or null."""
 
 
 class _ListWebhookDeliveriesResponseRequired(TypedDict):
     webhook_endpoint_id: int
     retention_days: int
     deliveries: List[WebhookDelivery]
+    page: int
+    limit: int
+    total: int
+    """Deliveries matching the filter."""
+    next_page: Optional[int]
 
 
 class ListWebhookDeliveriesResponse(_ListWebhookDeliveriesResponseRequired, total=False):

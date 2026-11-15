@@ -362,10 +362,11 @@ class Links:
         *,
         document_id: Optional[int] = None,
         folder_id: Optional[int] = None,
+        data_room_id: Optional[int] = None,
         room_id: Optional[int] = None,
         label: Optional[str] = None,
-        created_after: Optional[str] = None,
-        created_before: Optional[str] = None,
+        created_after: Optional[Union[Any, Any]] = None,
+        created_before: Optional[Union[Any, Any]] = None,
         status: Optional[Literal['active', 'expired', 'disabled', 'all']] = None,
         page: Optional[int] = None,
         limit: Optional[int] = None,
@@ -378,7 +379,7 @@ class Links:
         ``GET /api/v2/links`` – scope ``links:read``
         Docs: https://www.helprange.com/developers/api/list-links
         """
-        return cast('ListLinksResponse', self._client._request("GET", "/api/v2/links", params=_clean({"document_id": document_id, "folder_id": folder_id, "room_id": room_id, "label": label, "created_after": created_after, "created_before": created_before, "status": status, "page": page, "limit": limit}), options=request_options))
+        return cast('ListLinksResponse', self._client._request("GET", "/api/v2/links", params=_clean({"document_id": document_id, "folder_id": folder_id, "data_room_id": data_room_id, "room_id": room_id, "label": label, "created_after": created_after, "created_before": created_before, "status": status, "page": page, "limit": limit}), options=request_options))
 
     def views(
         self,
@@ -877,7 +878,7 @@ class DataRoomsGuests:
     ) -> RemoveDataRoomGuestResponse:
         """Remove a guest.
 
-        Takes a guest out of this room (by email or guest_id); they keep access to other rooms they are in. 409 when the room is frozen.
+        Takes a guest out of this room (by email or guest_id); they keep access to other rooms they are in. 409 when the room is frozen. Send email or guest_id – an empty body is a 400.
 
         ``POST /api/v2/data-rooms/{data_room_id}/guests/remove`` – scope ``rooms:write``
         Sent with an Idempotency-Key, so retries are safe (set your own with ``idempotency_key=``).
@@ -1200,7 +1201,7 @@ class DataRoomsDocuments:
     ) -> RemoveDataRoomDocumentsResponse:
         """Remove documents from a data room.
 
-        Like "Remove" on the room page: the documents leave the room (guests no longer see them); the files stay in their folders. Ids not in the room are listed in not_in_room. 409 when the room is frozen.
+        Like "Remove" on the room page: the documents leave the room (guests no longer see them); the files stay in their folders. Ids not in the room are listed in not_in_room. 409 when the room is frozen. Send document_ids and / or room_link_ids – an empty body is a 400.
 
         ``POST /api/v2/data-rooms/{data_room_id}/documents/remove`` – scope ``rooms:write``
         Sent with an Idempotency-Key, so retries are safe (set your own with ``idempotency_key=``).
@@ -1539,6 +1540,7 @@ class WebhookEndpoints:
         *,
         status: Optional[Literal['pending', 'delivered', 'failed']] = None,
         limit: Optional[int] = None,
+        page: Optional[int] = None,
         request_options: Optional[RequestOptions] = None,
     ) -> ListWebhookDeliveriesResponse:
         """List webhook deliveries.
@@ -1548,7 +1550,7 @@ class WebhookEndpoints:
         ``GET /api/v2/webhook-endpoints/{endpoint_id}/deliveries`` – scope ``webhooks:manage``
         Docs: https://www.helprange.com/developers/api/list-webhook-deliveries
         """
-        return cast('ListWebhookDeliveriesResponse', self._client._request("GET", f"/api/v2/webhook-endpoints/{_path(endpoint_id)}/deliveries", params=_clean({"status": status, "limit": limit}), options=request_options))
+        return cast('ListWebhookDeliveriesResponse', self._client._request("GET", f"/api/v2/webhook-endpoints/{_path(endpoint_id)}/deliveries", params=_clean({"status": status, "limit": limit, "page": page}), options=request_options))
 
     def redeliver(
         self,
@@ -1874,10 +1876,11 @@ class AsyncLinks:
         *,
         document_id: Optional[int] = None,
         folder_id: Optional[int] = None,
+        data_room_id: Optional[int] = None,
         room_id: Optional[int] = None,
         label: Optional[str] = None,
-        created_after: Optional[str] = None,
-        created_before: Optional[str] = None,
+        created_after: Optional[Union[Any, Any]] = None,
+        created_before: Optional[Union[Any, Any]] = None,
         status: Optional[Literal['active', 'expired', 'disabled', 'all']] = None,
         page: Optional[int] = None,
         limit: Optional[int] = None,
@@ -1890,7 +1893,7 @@ class AsyncLinks:
         ``GET /api/v2/links`` – scope ``links:read``
         Docs: https://www.helprange.com/developers/api/list-links
         """
-        return cast('ListLinksResponse', await self._client._request("GET", "/api/v2/links", params=_clean({"document_id": document_id, "folder_id": folder_id, "room_id": room_id, "label": label, "created_after": created_after, "created_before": created_before, "status": status, "page": page, "limit": limit}), options=request_options))
+        return cast('ListLinksResponse', await self._client._request("GET", "/api/v2/links", params=_clean({"document_id": document_id, "folder_id": folder_id, "data_room_id": data_room_id, "room_id": room_id, "label": label, "created_after": created_after, "created_before": created_before, "status": status, "page": page, "limit": limit}), options=request_options))
 
     async def views(
         self,
@@ -2389,7 +2392,7 @@ class AsyncDataRoomsGuests:
     ) -> RemoveDataRoomGuestResponse:
         """Remove a guest.
 
-        Takes a guest out of this room (by email or guest_id); they keep access to other rooms they are in. 409 when the room is frozen.
+        Takes a guest out of this room (by email or guest_id); they keep access to other rooms they are in. 409 when the room is frozen. Send email or guest_id – an empty body is a 400.
 
         ``POST /api/v2/data-rooms/{data_room_id}/guests/remove`` – scope ``rooms:write``
         Sent with an Idempotency-Key, so retries are safe (set your own with ``idempotency_key=``).
@@ -2712,7 +2715,7 @@ class AsyncDataRoomsDocuments:
     ) -> RemoveDataRoomDocumentsResponse:
         """Remove documents from a data room.
 
-        Like "Remove" on the room page: the documents leave the room (guests no longer see them); the files stay in their folders. Ids not in the room are listed in not_in_room. 409 when the room is frozen.
+        Like "Remove" on the room page: the documents leave the room (guests no longer see them); the files stay in their folders. Ids not in the room are listed in not_in_room. 409 when the room is frozen. Send document_ids and / or room_link_ids – an empty body is a 400.
 
         ``POST /api/v2/data-rooms/{data_room_id}/documents/remove`` – scope ``rooms:write``
         Sent with an Idempotency-Key, so retries are safe (set your own with ``idempotency_key=``).
@@ -3051,6 +3054,7 @@ class AsyncWebhookEndpoints:
         *,
         status: Optional[Literal['pending', 'delivered', 'failed']] = None,
         limit: Optional[int] = None,
+        page: Optional[int] = None,
         request_options: Optional[RequestOptions] = None,
     ) -> ListWebhookDeliveriesResponse:
         """List webhook deliveries.
@@ -3060,7 +3064,7 @@ class AsyncWebhookEndpoints:
         ``GET /api/v2/webhook-endpoints/{endpoint_id}/deliveries`` – scope ``webhooks:manage``
         Docs: https://www.helprange.com/developers/api/list-webhook-deliveries
         """
-        return cast('ListWebhookDeliveriesResponse', await self._client._request("GET", f"/api/v2/webhook-endpoints/{_path(endpoint_id)}/deliveries", params=_clean({"status": status, "limit": limit}), options=request_options))
+        return cast('ListWebhookDeliveriesResponse', await self._client._request("GET", f"/api/v2/webhook-endpoints/{_path(endpoint_id)}/deliveries", params=_clean({"status": status, "limit": limit, "page": page}), options=request_options))
 
     async def redeliver(
         self,

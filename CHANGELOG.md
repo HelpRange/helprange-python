@@ -5,7 +5,14 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
-## [0.1.0] – unreleased
+## [0.1.1] – 2026-11-15
+
+- `links.list` uses the `data_room_id` filter (`room_id` still accepted by the API but deprecated); date filters accept a date or date-time.
+- Webhook endpoint deliveries can be paged (`page`, `limit`, `total`, `next_page`).
+- `disabled_reason` on webhook endpoints may be `null`.
+- Data room guest details use a named schema; removing guests or documents requires a body.
+
+## [0.1.0] – 2026-11-15
 
 First release, generated from HelpRange API spec version 2026-11-15 (not published yet; this entry describes
 everything that will ship in it).
